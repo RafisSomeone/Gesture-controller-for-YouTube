@@ -155,7 +155,7 @@ class Camera_operator:
 
 
 
-        capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        capture = cv2.VideoCapture(0)
 
 
         key_pressed = 'q'
@@ -176,7 +176,6 @@ class Camera_operator:
             ret, frame = capture.read()
             if ( ret == False):
                 print("Failed to catch")
-            cv2.setMouseCallback('Current frame', handle_mouse_event)
 
             gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
@@ -227,7 +226,7 @@ class Camera_operator:
                 cv2.rectangle(thresh1, mouse_drawing_rect_coords[0], mouse_drawing_rect_coords[1], (130, 255, 200), 2)
 
             cv2.imshow('Current frame', thresh1)
-
+            cv2.setMouseCallback('Current frame', handle_mouse_event)
             '''if ( prev_image is not None ):
                 cv2.imshow('Prevoius frame', prev_image)'''
             '''if ( difference is not None):
