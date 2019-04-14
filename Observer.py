@@ -1,4 +1,4 @@
-from Camera_operator import *
+from Camera_Operator import Camera_operator
 from Operation import *
 from Browser_operator import *
 
