@@ -66,7 +66,7 @@ class Camera_operator:
 
     def operate_cropped_file(self, thresh,img):
 
-        if (thresh is not None ):
+        if (thresh is not None and img is not None ):
 
             im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
             cv.imshow("mask", thresh)
@@ -124,7 +124,7 @@ class Camera_operator:
         printing_label = True
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
-        palm_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/palm.xml")
+        palm_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/cascade.xml")
 
         thresh1 = None
         '''variable used to assign for variable prev_image'''
@@ -152,6 +152,7 @@ class Camera_operator:
 
             if flag == 1:
                 cropped_image = None
+                finger_image =None
 
             for (x, y, w, h) in fist:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
@@ -165,6 +166,7 @@ class Camera_operator:
 
             if flag == 0:
                 cropped_image = thresh1[lx-lw:lx+2*lw,ly-lh:ly+2*lh]
+                finger_image = gray[lx - lw:lx + 2 * lw, ly - lh:ly + 2 * lh]
 
             for (x, y, w, h) in palm:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -172,7 +174,7 @@ class Camera_operator:
 
 
 
-            self.operate_cropped_file(thresh1,frame)
+            self.operate_cropped_file(thresh1,finger_image)
 
 
             fgmask = fgbg.apply(frame)
