@@ -124,15 +124,15 @@ class Camera_operator:
         printing_label = True
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
-        palm_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/cascade.xml")
+        # palm_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/cascade.xml")
 
         thresh1 = None
         '''variable used to assign for variable prev_image'''
 
         fgbg = cv2.createBackgroundSubtractorMOG2()
         flag = 1
-        lx=0
         ly=0
+        lx=0
         lw=0
         lh =0
         while (capture.isOpened() and (not self.leave)):
@@ -148,38 +148,57 @@ class Camera_operator:
 
             fist = fist_cascade.detectMultiScale(gray, 1.3, 5)
 
-            palm = palm_cascade.detectMultiScale(gray, 1.3, 5)
+            # palm = palm_cascade.detectMultiScale(gray, 1.3, 5)
 
             if flag == 1:
                 cropped_image = None
-                finger_image =None
+                # finger_image =None
 
             for (x, y, w, h) in fist:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 if fist != ():
-                    lx=x
-                    ly =y
+                    ly=x
+                    lx =y
                     lw =w
                     lh =h
 
                     flag = 0
-
+            print(frame.shape[1])
             if flag == 0:
-                cropped_image = thresh1[lx-lw:lx+2*lw,ly-lh:ly+2*lh]
-                finger_image = gray[lx - lw:lx + 2 * lw, ly - lh:ly + 2 * lh]
 
-            for (x, y, w, h) in palm:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                left_up_corner = lx-lw
+                right_up_corner = lx+2*lw
+                left_down_corner= ly-lh
+                right_down_corner=ly+2*lh
+                if(left_up_corner<0):
+                    left_up_corner=0
+                if(right_up_corner>frame.shape[1]):
+                    right_up_corner=frame.shape[1]
+                if(left_down_corner<0):
+                    left_down_corner=0
+                if(right_down_corner>frame.shape[1]):
+                    right_down_corner:frame.shape[1]
+                cropped_image = frame[left_up_corner:right_up_corner,left_down_corner:right_down_corner]
+
+
+                if cropped_image != []:
+
+                    cv2.imshow('sd', cropped_image)
+
+            # for (x, y, w, h) in palm:
 
 
 
 
-            self.operate_cropped_file(thresh1,finger_image)
+
+
+            # self.operate_cropped_file(thresh1,finger_image)
 
 
             fgmask = fgbg.apply(frame)
 
             cv2.imshow('fg', frame)
+            #
 
 
             blur = cv2.GaussianBlur(gray, (base_gaussian_val, base_gaussian_val), 0)
