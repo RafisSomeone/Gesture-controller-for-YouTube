@@ -1,5 +1,5 @@
-from Browser_Operator import Browser_operator
-from camera_operator import Camera_operator
+from Browser_operator import Browser_operator
+from Camera_Operator import Camera_operator
 from Operation import *
 import threading
 import time
@@ -7,16 +7,22 @@ import time
 
 def main():
     camera_operator = Camera_operator()
-    'camera_operator_thread = threading.Thread( target = camera_operator.start , args = [] )'
-    'camera_operator_thread.start()'
-    camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
+    camera_operator_thread = threading.Thread( target = camera_operator.start , args = [] )
     camera_operator_thread.start()
+    # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
+    # camera_operator_thread.start()
 
     '''TODO względne sciezki!!!'''
 
-    browser_operator = Browser_operator("/home/michal/chromedriver")
+
+    browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver")
     while(True):
         if ( camera_operator.status != -1 ):
+
+            if (camera_operator.status_move == 1):
+                browser_operator.increase_volume()
+            if (camera_operator.status_move == -1):
+                browser_operator.decrease_volume()
 
             if ( camera_operator.status == ord('a') ):
                 browser_operator.like()
@@ -46,14 +52,14 @@ def main():
                 browser_operator.scroll_down_by(102)
             if ( camera_operator.status == ord('k')):
                 browser_operator.go_to_top_of_the_page()
-            print(camera_operator.status)
+            # print(camera_operator.status)
 
 
 
             '''KOMENTARZ DO USUNIĘCIA:
             Ten delay jest po to żeby nie zbierać kilka razy tego samego
             W sensie procesor przydziela czas głównemu wątkowi, a on odczytuje stan zmiennej kilka razy, do momentu
-             przydzielenia czasu temu co obsługuje kamerę zmienna status jest niezmieniona, co jest nieprawidłowe bo ona 
+             przydzielenia czasu temu co obsługuje kamerę zmienna status jest niezmieniona, co jest nieprawidłowe bo ona
              się ma zmieniac od razu na -1 '''
             time.sleep(0.1)
 

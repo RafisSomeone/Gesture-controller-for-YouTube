@@ -30,9 +30,9 @@ class Browser_operator:
 
     def __init__(self, path):
 
-        self.driver = webdriver.Chrome(path)
+        self.driver = webdriver.Chrome("/home/rafal/Pulpit/chromedriver")
         self.driver.set_page_load_timeout(5)
-        self.driver.get("https://www.youtube.com/watch?v=McnMsFwZlvA")
+        self.driver.get("https://www.youtube.com/watch?v=LDU_Txk06tM")
 
         self.keyboard = Controller()
 

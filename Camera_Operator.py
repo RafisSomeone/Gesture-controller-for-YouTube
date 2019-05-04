@@ -41,6 +41,7 @@ class Camera_operator:
 
         '''This attribute stores current user decision'''
         self.status = None
+        self.status_move = None
 
         '''This attribute shows if observer took status'''
         self.status_delivered = True
@@ -70,45 +71,65 @@ class Camera_operator:
 
             im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
+            try:
+                contour = max(contours, key=lambda x: cv.contourArea(x))
 
-            contour = max(contours, key=lambda x: cv.contourArea(x))
+                x, y, w, h = cv.boundingRect(contour)
 
-            x, y, w, h = cv.boundingRect(contour)
 
-            cv.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 0)
+                cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 255), 0)
+                if x <10:
+                    self.status_move = 1
+                else:
+                    if x+w == img.shape[1]:
+                        self.status_move = -1
+                    else:
+                        if y == 0 :
+                            self.status_move = 2
+                        else:
+                            self.status_move=0
 
-            hull = cv.convexHull(contour)
 
-            drawing = np.zeros(img.shape, np.uint8)
-            cv.drawContours(drawing, [contour], -1, (0, 255, 0), 0)
-            cv.drawContours(drawing, [hull], -1, (0, 0, 255), 0)
+                print(self.status_move)
 
-            hull = cv.convexHull(contour, returnPoints=False)
-            defects = cv.convexityDefects(contour, hull)
-            if(defects is not None):
-                count_defects = 0
 
-                for i in range(defects.shape[0]):
-                    s, e, f, d = defects[i, 0]
-                    start = tuple(contour[s][0])
-                    end = tuple(contour[e][0])
-                    far = tuple(contour[f][0])
 
-                    a = math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
-                    b = math.sqrt((far[0] - start[0]) ** 2 + (far[1] - start[1]) ** 2)
-                    c = math.sqrt((end[0] - far[0]) ** 2 + (end[1] - far[1]) ** 2)
-                    angle = (math.acos((b ** 2 + c ** 2 - a ** 2) / (2 * b * c)) * 180) / 3.14
 
-                    if angle <= 90:
-                        count_defects += 1
-                        cv.circle(img, far, 1, [0, 0, 255], -1)
+                hull = cv.convexHull(contour)
 
-                    cv.line(img, start, end, [0, 255, 0], 2)
+                drawing = np.zeros(img.shape, np.uint8)
+                cv.drawContours(drawing, [contour], -1, (0, 255, 0), 0)
+                cv.drawContours(drawing, [hull], -1, (0, 0, 255), 0)
 
-                cv.putText(img, str(count_defects), (50, 50), cv.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 2)
-                cv.imshow("gest", img)
-                all = np.hstack((drawing, img))
-                cv.imshow("Contours", all)
+                hull = cv.convexHull(contour, returnPoints=False)
+                defects = cv.convexityDefects(contour, hull)
+                if(defects is not None):
+                    count_defects = 0
+
+                    for i in range(defects.shape[0]):
+                        s, e, f, d = defects[i, 0]
+                        start = tuple(contour[s][0])
+                        end = tuple(contour[e][0])
+                        far = tuple(contour[f][0])
+
+                        a = math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
+                        b = math.sqrt((far[0] - start[0]) ** 2 + (far[1] - start[1]) ** 2)
+                        c = math.sqrt((end[0] - far[0]) ** 2 + (end[1] - far[1]) ** 2)
+                        angle = (math.acos((b ** 2 + c ** 2 - a ** 2) / (2 * b * c)) * 180) / 3.14
+
+                        if angle <= 90:
+                            count_defects += 1
+                            cv.circle(img, far, 1, [0, 0, 255], -1)
+
+                        cv.line(img, start, end, [0, 255, 0], 2)
+
+                    self.status=count_defects
+
+                    all = np.hstack((drawing, img))
+                    # cv.imshow("Contours", all)
+
+            except ValueError:
+                print("err")
 
     def start(self):
 
@@ -117,17 +138,15 @@ class Camera_operator:
 
         key_pressed = 'q'
 
-        base_thresh_val = 59
-        base_gaussian_val = 5
-        base_med_val = 11
-        printing_label = True
+
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
 
+        main = "main"
+        cv2.namedWindow(main)  # Create a named window
+        cv2.moveWindow(main, 1800, 0)
+
         thresh1 = None
-
-        fgbg = cv2.createBackgroundSubtractorMOG2()
-
         flag = 1
         ly=0
         lx=0
@@ -141,6 +160,8 @@ class Camera_operator:
 
             '''Reading image:'''
             ret, frame = capture.read()
+
+            frame_to_see = frame
             if (ret == False):
                 print("Failed to catch")
 
@@ -168,45 +189,41 @@ class Camera_operator:
 
             if flag == 0:
 
-                left_up_corner = lx-lw
-                right_up_corner = lx+2*lw
-                left_down_corner= ly-lh
-                right_down_corner=ly+2*lh
-                if(left_up_corner<0):
-                    left_up_corner=0
-                if(right_up_corner>frame.shape[1]):
-                    right_up_corner=frame.shape[1]
-                if(left_down_corner<0):
-                    left_down_corner=0
-                if(right_down_corner>frame.shape[1]):
-                    right_down_corner:frame.shape[1]
-                cropped_image = frame[left_up_corner:right_up_corner,left_down_corner:right_down_corner]
-                if (first_gray is not None):
-                    cropped_thresh = thresh1[left_up_corner:right_up_corner, left_down_corner:right_down_corner]
-
-
-                if cropped_image != []:
-
-                    cv2.imshow('sd', cropped_image)
-
-
-
-            self.operate_cropped_file(cropped_thresh,cropped_image)
-
-
-            fgmask = fgbg.apply(frame)
-
-            cv2.imshow('fg', frame)
+                left_up_corner_y = lx-lw
+                right_down_corner_y = lx+2*lw
+                left_up_corner_x= ly-lh
+                right_down_corner_x=ly+2*lh
+                if(left_up_corner_y<0):
+                    left_up_corner_y=0
+                if(right_down_corner_y>frame.shape[1]):
+                    right_down_corner_y=frame.shape[1]
+                if(left_up_corner_x<0):
+                    left_up_corner_x=0
+                if(right_down_corner_x>frame.shape[1]):
+                    right_down_corner_x:frame.shape[1]
+                cropped_image = frame[left_up_corner_y:right_down_corner_y,left_up_corner_x:right_down_corner_x]
+                if first_gray is not None and thresh1 is not None :
+                    cropped_thresh = thresh1[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
+                    cv2.rectangle(frame,(left_up_corner_x,left_up_corner_y),(right_down_corner_x,right_down_corner_y),(255,255,0))
+                # if cropped_image != []:
+                #
+                #     cv2.imshow('sd', cropped_image)
 
 
 
-            blur = cv2.GaussianBlur(gray, (base_gaussian_val, base_gaussian_val), 0)
-
-            med = cv2.medianBlur(blur, base_med_val)
+                self.operate_cropped_file(cropped_thresh,cropped_image)
 
 
 
-            output= frame
+
+            cv2.imshow(main, frame)
+
+
+
+
+
+
+
 
 
 
@@ -229,37 +246,36 @@ class Camera_operator:
                 ret, thresh1 = cv.threshold(median, 20, 255, cv.THRESH_BINARY)
 
                 cv2.imshow("get", thresh1)
-                cv2.imshow("get2", difference)
 
 
-            '''Label printing:'''
-            if printing_label:
-                cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
-                cv2.putText(output,
-                            "Callibrate threshold using W and S key untill your hand will have good contrast with background.",
-                            (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "Callibrate gausianBlur using E and D key untill your hand will have good contrast with background.",
-                            (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "Callibrate medianBlur using R and F key untill your hand will have good contrast with background.",
-                            (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "Use your mouse to specify hand gesture catching region",
-                            (15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "WARNING: Select area with the greatest contrast beetween background and your hand",
-                            (15, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "When finished - press ENTER",
-                            (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "C - toggle label visibility",
-                            (15, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-                cv2.putText(output,
-                            "Q - finish",
-                            (15, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-
+            # '''Label printing:'''
+            # if printing_label:
+            #     cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
+            #     cv2.putText(output,
+            #                 "Callibrate threshold using W and S key untill your hand will have good contrast with background.",
+            #                 (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "Callibrate gausianBlur using E and D key untill your hand will have good contrast with background.",
+            #                 (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "Callibrate medianBlur using R and F key untill your hand will have good contrast with background.",
+            #                 (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "Use your mouse to specify hand gesture catching region",
+            #                 (15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "WARNING: Select area with the greatest contrast beetween background and your hand",
+            #                 (15, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "When finished - press ENTER",
+            #                 (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "C - toggle label visibility",
+            #                 (15, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #     cv2.putText(output,
+            #                 "Q - finish",
+            #                 (15, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+            #
 
 
             key_pressed = cv2.waitKey(10)
@@ -274,29 +290,11 @@ class Camera_operator:
             if (key_pressed == ord('l')):
                 fist_detection = not fist_detection
 
-            if (key_pressed == ord('w')):
-                base_thresh_val += 1
-            if (key_pressed == ord('s')):
-                base_thresh_val -= 1
-            if (key_pressed == ord('e')):
-                base_gaussian_val += 2
-            if (key_pressed == ord('d')):
-                if (base_gaussian_val > 1):
-                    base_gaussian_val -= 2
-            if (key_pressed == ord('r')):
-                base_med_val += 2
-            if (key_pressed == ord('f')):
-                if (base_med_val > 1):
-                    base_med_val -= 2
-            if (key_pressed == ord('c')):
-                printing_label = not printing_label
+
             if (key_pressed == ord('q')):
                 self.leave = True
             if (key_pressed != -1):
-                print(base_thresh_val)
-                print(base_gaussian_val)
-                print(base_med_val)
-                print()
+               pass
         '''Cleaning:'''
         cv2.destroyAllWindows()
         capture.release()
