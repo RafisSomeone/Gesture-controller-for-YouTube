@@ -1,4 +1,3 @@
-
 import time
 from pynput.keyboard import Key,Controller
 from selenium import webdriver
@@ -53,6 +52,8 @@ class Browser_operator:
         If user wants to change to video 5, screen is scrolled by 2 times ( n-3 to make chosen video at center)'''
         self.current_shifts = 0
 
+        self.identifier = None
+        self.password = None
 
 
     def __del__(self):
@@ -212,7 +213,6 @@ class Browser_operator:
     def decrease_volume(self):
         self.synch()
         self.go_to_top_of_the_page()
-        time.sleep(1)
         if ( not self.status ):
             '''User is not in video section'''
             return
@@ -324,6 +324,57 @@ class Browser_operator:
         whole_page = self.driver.find_element_by_xpath("/html")
         whole_page.send_keys("f")
 
+
+
+    def radio(self):
+        self.synch()
+        self.go_to_top_of_the_page()
+
+        self.driver.find_elements_by_id("button")[8].click()
+        self.driver.find_elements_by_id("label")[2].click()
+
+
+
+
+    def take_identifier_and_password(self):
+        '''Temporary method'''
+        self.identifier = input()
+        print(self.identifier)
+        self.password = input()
+        print(self.password)
+
+
+
+    def login(self):
+
+        if ( self.identifier is None or self.password is None ):
+            return
+
+        self.synch()
+        self.go_to_top_of_the_page()
+
+        self.driver.find_elements_by_id("button")[17].click()
+
+        self.driver.find_element_by_id("identifierId").send_keys(self.identifier)
+        self.driver.find_element_by_id("identifierNext").click()
+
+        time.sleep(1)
+
+
+        'if login passes then it goes for password, else it falls back'
+        try:
+            self.driver.find_element_by_name("password").send_keys(self.password)
+            self.driver.find_element_by_id("passwordNext").click()
+        except:
+            self.driver.back()
+
+
+        'if password does not pass, fall back twice'
+        'There is no element such as passwordNext if user has logged in succesfuly'
+        if ( len(self.driver.find_elements_by_id("passwordNext")) != 0 ):
+            self.driver.back()
+            time.sleep(0.5)
+            self.driver.back()
 
 
 
