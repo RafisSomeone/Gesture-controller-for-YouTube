@@ -297,7 +297,17 @@ class Camera_operator:
                 print(base_gaussian_val)
                 print(base_med_val)
                 print()
-
         '''Cleaning:'''
+        cv2.destroyAllWindows()
+        capture.release()
+    def multitasking_keyboard_input_testing(self):
+        '''This method is made only to test if browser takes input from that thread'''
+        capture = cv2.VideoCapture(0)
+        ret, frame = capture.read()
+        cv2.imshow("aaa",ret)
+        key_pressed = cv2.waitKey(10)
+        while (key_pressed != ord('q')):
+            self.status = key_pressed
+            key_pressed = cv2.waitKey(10)
         cv2.destroyAllWindows()
         capture.release()
