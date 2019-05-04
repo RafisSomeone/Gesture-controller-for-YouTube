@@ -41,9 +41,10 @@ def main():
             if ( camera_operator.status == ord('n')):
                 browser_operator.stop_or_continue()
             if ( camera_operator.status == ord('m')):
-                browser_operator.scroll_down_by(-102)
+                browser_operator.radio()
             if ( camera_operator.status == ord('j')):
-                browser_operator.scroll_down_by(102)
+                browser_operator.take_identifier_and_password()
+                browser_operator.login()
             if ( camera_operator.status == ord('k')):
                 browser_operator.go_to_top_of_the_page()
             print(camera_operator.status)
