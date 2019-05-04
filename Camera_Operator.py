@@ -69,7 +69,7 @@ class Camera_operator:
         if (thresh is not None and img is not None ):
 
             im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-            cv.imshow("mask", thresh)
+
 
             contour = max(contours, key=lambda x: cv.contourArea(x))
 
@@ -111,8 +111,7 @@ class Camera_operator:
                 cv.imshow("Contours", all)
 
     def start(self):
-        global mouse_drawing_rect_coords
-        global left_clicked
+
 
         capture = cv2.VideoCapture(0)
 
@@ -124,20 +123,21 @@ class Camera_operator:
         printing_label = True
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
-        # palm_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/cascade.xml")
 
         thresh1 = None
-        '''variable used to assign for variable prev_image'''
 
         fgbg = cv2.createBackgroundSubtractorMOG2()
+
         flag = 1
         ly=0
         lx=0
         lw=0
         lh =0
+        first_gray = None
+        fist_detection = True
         while (capture.isOpened() and (not self.leave)):
 
-            prev_image = deepcopy(thresh1)
+
 
             '''Reading image:'''
             ret, frame = capture.read()
@@ -146,24 +146,26 @@ class Camera_operator:
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            fist = fist_cascade.detectMultiScale(gray, 1.3, 5)
 
-            # palm = palm_cascade.detectMultiScale(gray, 1.3, 5)
+
+            fist = fist_cascade.detectMultiScale(gray, 1.3, 5)
 
             if flag == 1:
                 cropped_image = None
-                # finger_image =None
+                cropped_thresh = None
 
-            for (x, y, w, h) in fist:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-                if fist != ():
-                    ly=x
-                    lx =y
-                    lw =w
-                    lh =h
 
-                    flag = 0
-            print(frame.shape[1])
+            if fist_detection == True:
+                for x, y, w, h in fist:
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                    if fist != ():
+                        ly=x
+                        lx =y
+                        lw =w
+                        lh =h
+
+                        flag = 0
+
             if flag == 0:
 
                 left_up_corner = lx-lw
@@ -179,80 +181,98 @@ class Camera_operator:
                 if(right_down_corner>frame.shape[1]):
                     right_down_corner:frame.shape[1]
                 cropped_image = frame[left_up_corner:right_up_corner,left_down_corner:right_down_corner]
+                if (first_gray is not None):
+                    cropped_thresh = thresh1[left_up_corner:right_up_corner, left_down_corner:right_down_corner]
 
 
                 if cropped_image != []:
 
                     cv2.imshow('sd', cropped_image)
 
-            # for (x, y, w, h) in palm:
 
 
-
-
-
-
-            # self.operate_cropped_file(thresh1,finger_image)
+            self.operate_cropped_file(cropped_thresh,cropped_image)
 
 
             fgmask = fgbg.apply(frame)
 
             cv2.imshow('fg', frame)
-            #
+
 
 
             blur = cv2.GaussianBlur(gray, (base_gaussian_val, base_gaussian_val), 0)
 
             med = cv2.medianBlur(blur, base_med_val)
 
-            ret, thresh1 = cv2.threshold(med, base_thresh_val, 255, cv2.THRESH_BINARY_INV)
+
+
+            output= frame
 
 
 
 
 
             difference = None
-            if (prev_image is not None):
-                difference = cv2.absdiff(prev_image, thresh1)
+            if (first_gray is not None):
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
-            # '''Label printing:'''
-            # if printing_label:
-            #     cv2.rectangle(thresh1, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
-            #     cv2.putText(thresh1,
-            #                 "Callibrate threshold using W and S key untill your hand will have good contrast with background.",
-            #                 (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "Callibrate gausianBlur using E and D key untill your hand will have good contrast with background.",
-            #                 (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "Callibrate medianBlur using R and F key untill your hand will have good contrast with background.",
-            #                 (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "Use your mouse to specify hand gesture catching region",
-            #                 (15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "WARNING: Select area with the greatest contrast beetween background and your hand",
-            #                 (15, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "When finished - press ENTER",
-            #                 (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "C - toggle label visibility",
-            #                 (15, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #     cv2.putText(thresh1,
-            #                 "Q - finish",
-            #                 (15, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
-            #
-            # if (len(mouse_drawing_rect_coords) == 2):
-            #     cv2.rectangle(thresh1, mouse_drawing_rect_coords[0], mouse_drawing_rect_coords[1], (130, 255, 200), 2)
 
-            cv2.imshow('Current frame', thresh1)
-            cv2.setMouseCallback('Current frame', handle_mouse_event)
-            '''if ( prev_image is not None ):
-                cv2.imshow('Prevoius frame', prev_image)'''
-            '''if ( difference is not None):
-                cv2.imshow('Pixel Differences', difference)'''
+
+
+
+                # In each iteration, calculate absolute difference between current frame and reference frame
+                difference = cv2.absdiff(gray, first_gray)
+                median = cv2.medianBlur(difference, 15)
+                # difference = cv2.GaussianBlur(difference, (40, 40), 0)
+                # Apply thresholding to eliminate noise
+                ret, thresh1 = cv.threshold(median, 20, 255, cv.THRESH_BINARY)
+
+                cv2.imshow("get", thresh1)
+                cv2.imshow("get2", difference)
+
+
+            '''Label printing:'''
+            if printing_label:
+                cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
+                cv2.putText(output,
+                            "Callibrate threshold using W and S key untill your hand will have good contrast with background.",
+                            (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "Callibrate gausianBlur using E and D key untill your hand will have good contrast with background.",
+                            (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "Callibrate medianBlur using R and F key untill your hand will have good contrast with background.",
+                            (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "Use your mouse to specify hand gesture catching region",
+                            (15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "WARNING: Select area with the greatest contrast beetween background and your hand",
+                            (15, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "When finished - press ENTER",
+                            (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "C - toggle label visibility",
+                            (15, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+                cv2.putText(output,
+                            "Q - finish",
+                            (15, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
+
+
+
             key_pressed = cv2.waitKey(10)
+
+            if(key_pressed == ord('p')):
+                ret, first = capture.read()
+                first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
+
+                first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
+                flag = 1
+
+            if (key_pressed == ord('l')):
+                fist_detection = not fist_detection
 
             if (key_pressed == ord('w')):
                 base_thresh_val += 1
