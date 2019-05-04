@@ -243,7 +243,7 @@ class Camera_operator:
                 median = cv2.medianBlur(difference, 15)
                 # difference = cv2.GaussianBlur(difference, (40, 40), 0)
                 # Apply thresholding to eliminate noise
-                ret, thresh1 = cv.threshold(median, 20, 255, cv.THRESH_BINARY)
+                ret, thresh1 = cv.threshold(median, 60, 255, cv.THRESH_BINARY)
 
                 cv2.imshow("get", thresh1)
 
