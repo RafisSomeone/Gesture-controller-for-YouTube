@@ -1,12 +1,12 @@
 from Browser_operator import Browser_operator
-from Camera_Operator import Camera_operator
+from Camera_Operator import CameraOperator
 from Operation import *
 import threading
 import time
 
 
 def main():
-    camera_operator = Camera_operator()
+    camera_operator = CameraOperator()
     camera_operator_thread = threading.Thread( target = camera_operator.start , args = [] )
     camera_operator_thread.start()
     # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
@@ -15,7 +15,7 @@ def main():
     '''TODO względne sciezki!!!'''
 
 
-    browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver")
+    browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver")
     while(True):
         if ( camera_operator.status != -1 ):
 
@@ -53,7 +53,7 @@ def main():
                 browser_operator.login()
             if ( camera_operator.status == ord('k')):
                 browser_operator.go_to_top_of_the_page()
-            # print(camera_operator.status)
+            print(camera_operator.status)
 
 
 

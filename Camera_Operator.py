@@ -13,27 +13,27 @@ def handle_mouse_event(event, x, y, flags, param):
     global left_clicked
     global mouse_drawing_rect_coords
 
-    if (left_clicked):
+    if left_clicked:
         '''User is drawing case, so new end is taken'''
-        if (len(mouse_drawing_rect_coords) > 2):
+        if len(mouse_drawing_rect_coords) > 2:
             mouse_drawing_rect_coords = []
-        if (len(mouse_drawing_rect_coords) > 1):
+        if len(mouse_drawing_rect_coords) > 1:
             del (mouse_drawing_rect_coords[-1])
         mouse_drawing_rect_coords.append((x, y))
 
-    if (event == cv2.EVENT_LBUTTONDOWN and not left_clicked):
+    if event == cv2.EVENT_LBUTTONDOWN and not left_clicked:
         '''User just clicked case - starting to draw'''
         mouse_drawing_rect_coords.append((x, y))
         left_clicked = True
-    elif (event == cv2.EVENT_LBUTTONUP):
+    elif event == cv2.EVENT_LBUTTONUP:
         '''User stopped drawing case, so area is left as it is'''
-        if (len(mouse_drawing_rect_coords) == 2):
+        if len(mouse_drawing_rect_coords) == 2:
             del (mouse_drawing_rect_coords[-1])
         mouse_drawing_rect_coords.append((x, y))
         left_clicked = False
 
 
-class Camera_operator:
+class CameraOperator:
 
     def __init__(self):
         '''Global variable, when leave is true, program ends'''
@@ -51,23 +51,22 @@ class Camera_operator:
         self.status_delivered = True
         return self.status
 
-    def get_cropped_image(self, image,fist):
+    def get_cropped_image(self, image, fist):
         '''if the area in which hand recognition maus take place was specified, this function prints cropped image'''
 
         for (x, y, w, h) in fist:
-            leftdown = x-w
-            rightdown = x+2*w
-            leftup = y-h
-            rightup = y+2*h
+            leftdown = x - w
+            rightdown = x + 2 * w
+            leftup = y - h
+            rightup = y + 2 * h
 
             cropped_image = image[leftdown:rightdown, leftup:rightup]
 
         return cropped_image
 
+    def operate_cropped_file(self, thresh, img):
 
-    def operate_cropped_file(self, thresh,img):
-
-        if (thresh is not None and img is not None ):
+        if thresh is not None and img is not None:
 
             im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
@@ -76,24 +75,19 @@ class Camera_operator:
 
                 x, y, w, h = cv.boundingRect(contour)
 
-
                 cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 255), 0)
-                if x <10:
+                if x < 10:
                     self.status_move = 1
                 else:
-                    if x+w == img.shape[1]:
+                    if x + w == img.shape[1]:
                         self.status_move = -1
                     else:
-                        if y == 0 :
+                        if y == 0:
                             self.status_move = 2
                         else:
-                            self.status_move=0
-
+                            self.status_move = 0
 
                 print(self.status_move)
-
-
-
 
                 hull = cv.convexHull(contour)
 
@@ -103,7 +97,7 @@ class Camera_operator:
 
                 hull = cv.convexHull(contour, returnPoints=False)
                 defects = cv.convexityDefects(contour, hull)
-                if(defects is not None):
+                if defects is not None:
                     count_defects = 0
 
                     for i in range(defects.shape[0]):
@@ -123,7 +117,7 @@ class Camera_operator:
 
                         cv.line(img, start, end, [0, 255, 0], 2)
 
-                    self.status=count_defects
+                    self.status = count_defects
 
                     all = np.hstack((drawing, img))
                     # cv.imshow("Contours", all)
@@ -133,12 +127,9 @@ class Camera_operator:
 
     def start(self):
 
-
         capture = cv2.VideoCapture(0)
 
         key_pressed = 'q'
-
-
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
 
@@ -147,27 +138,25 @@ class Camera_operator:
         cv2.moveWindow(main, 1800, 0)
 
         thresh1 = None
+        darkness = 20
         flag = 1
-        ly=0
-        lx=0
-        lw=0
-        lh =0
+        ly = 0
+        lx = 0
+        lw = 0
+        lh = 0
         first_gray = None
         fist_detection = True
-        while (capture.isOpened() and (not self.leave)):
-
-
+        mode = 1
+        while capture.isOpened() and (not self.leave):
 
             '''Reading image:'''
             ret, frame = capture.read()
 
             frame_to_see = frame
-            if (ret == False):
+            if ret == False:
                 print("Failed to catch")
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-
 
             fist = fist_cascade.detectMultiScale(gray, 1.3, 5)
 
@@ -175,78 +164,62 @@ class Camera_operator:
                 cropped_image = None
                 cropped_thresh = None
 
-
-            if fist_detection == True:
+            if fist_detection:
                 for x, y, w, h in fist:
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                     if fist != ():
-                        ly=x
-                        lx =y
-                        lw =w
-                        lh =h
+                        ly = x
+                        lx = y
+                        lw = w
+                        lh = h
 
                         flag = 0
 
             if flag == 0:
 
-                left_up_corner_y = lx-lw
-                right_down_corner_y = lx+2*lw
-                left_up_corner_x= ly-lh
-                right_down_corner_x=ly+2*lh
-                if(left_up_corner_y<0):
-                    left_up_corner_y=0
-                if(right_down_corner_y>frame.shape[1]):
-                    right_down_corner_y=frame.shape[1]
-                if(left_up_corner_x<0):
-                    left_up_corner_x=0
-                if(right_down_corner_x>frame.shape[1]):
-                    right_down_corner_x:frame.shape[1]
-                cropped_image = frame[left_up_corner_y:right_down_corner_y,left_up_corner_x:right_down_corner_x]
-                if first_gray is not None and thresh1 is not None :
+                left_up_corner_y = lx - lw
+                right_down_corner_y = lx + 2 * lw
+                left_up_corner_x = ly - lh
+                right_down_corner_x = ly + 2 * lh
+                if left_up_corner_y < 0:
+                    left_up_corner_y = 0
+                if right_down_corner_y > frame.shape[1]:
+                    right_down_corner_y = frame.shape[1]
+                if left_up_corner_x < 0:
+                    left_up_corner_x = 0
+                if right_down_corner_x > frame.shape[1]:
+                    right_down_corner_x: frame.shape[1]
+                cropped_image = frame[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
+                if first_gray is not None and thresh1 is not None:
                     cropped_thresh = thresh1[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
-                    cv2.rectangle(frame,(left_up_corner_x,left_up_corner_y),(right_down_corner_x,right_down_corner_y),(255,255,0))
+                    cv2.rectangle(frame, (left_up_corner_x, left_up_corner_y),
+                                  (right_down_corner_x, right_down_corner_y), (255, 255, 0))
                 # if cropped_image != []:
                 #
                 #     cv2.imshow('sd', cropped_image)
 
-
-
-                self.operate_cropped_file(cropped_thresh,cropped_image)
-
-
-
+                self.operate_cropped_file(cropped_thresh, cropped_image)
 
             cv2.imshow(main, frame)
 
-
-
-
-
-
-
-
-
-
-
-
             difference = None
-            if (first_gray is not None):
+            if first_gray is not None:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
-
-
-
-
 
                 # In each iteration, calculate absolute difference between current frame and reference frame
                 difference = cv2.absdiff(gray, first_gray)
                 median = cv2.medianBlur(difference, 15)
+                median2 = cv2.medianBlur(gray, 15)
                 # difference = cv2.GaussianBlur(difference, (40, 40), 0)
                 # Apply thresholding to eliminate noise
-                ret, thresh1 = cv.threshold(median, 60, 255, cv.THRESH_BINARY)
-
+                ret, thresh1 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
+                ret, thresh2 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
                 cv2.imshow("get", thresh1)
+                cv2.imshow("get2", thresh2)
 
+            if mode % 2 == 0:
+                thresh1 = thresh2
 
             # '''Label printing:'''
             # if printing_label:
@@ -277,34 +250,43 @@ class Camera_operator:
             #                 (15, 85), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
             #
 
-
             key_pressed = cv2.waitKey(10)
 
-            if(key_pressed == ord('p')):
+            if key_pressed == ord('p'):
                 ret, first = capture.read()
                 first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
 
                 first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
                 flag = 1
 
-            if (key_pressed == ord('l')):
+            if key_pressed == ord('l'):
                 fist_detection = not fist_detection
 
+            if key_pressed == ord('+'):
+                darkness += 1
 
-            if (key_pressed == ord('q')):
+            if key_pressed == ord('-'):
+                darkness -= 1
+                if darkness < 0:
+                    darkness = 0
+            if key_pressed == ord('k'):
+                mode += 1
+
+            if key_pressed == ord('q'):
                 self.leave = True
-            if (key_pressed != -1):
-               pass
+            if key_pressed != -1:
+                pass
         '''Cleaning:'''
         cv2.destroyAllWindows()
         capture.release()
+
     def multitasking_keyboard_input_testing(self):
         '''This method is made only to test if browser takes input from that thread'''
         capture = cv2.VideoCapture(0)
         ret, frame = capture.read()
-        cv2.imshow("aaa",ret)
+        cv2.imshow("aaa", ret)
         key_pressed = cv2.waitKey(10)
-        while (key_pressed != ord('q')):
+        while key_pressed != ord('q'):
             self.status = key_pressed
             key_pressed = cv2.waitKey(10)
         cv2.destroyAllWindows()

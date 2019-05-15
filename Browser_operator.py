@@ -1,5 +1,5 @@
 import time
-from pynput.keyboard import Key,Controller
+from pynput.keyboard import Key, Controller
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,23 +9,19 @@ from selenium.webdriver.common.keys import Keys
 
 class Browser_operator:
 
-
-
-    def highlight_browser_element(self,element):
-        self.driver.execute_script("arguments[0].setAttribute('style', 'background: blue; border: 2px solid red;');", element)
+    def highlight_browser_element(self, element):
+        self.driver.execute_script("arguments[0].setAttribute('style', 'background: blue; border: 2px solid red;');",
+                                   element)
 
     def unhighlight_browser_element(self, element):
         self.driver.execute_script("arguments[0].style.border='0px'", element)
         self.driver.execute_script("arguments[0].style.background='white'", element)
 
-
-
     def scroll_down_by(self, value):
-        self.driver.execute_script("window.scrollBy(0," + str(value) +")")
-    def scroll_up_by(self, value):
         self.driver.execute_script("window.scrollBy(0," + str(value) + ")")
 
-
+    def scroll_up_by(self, value):
+        self.driver.execute_script("window.scrollBy(0," + str(value) + ")")
 
     def __init__(self, path):
 
@@ -55,12 +51,9 @@ class Browser_operator:
         self.identifier = None
         self.password = None
 
-
     def __del__(self):
 
         self.driver.close()
-
-
 
     def synch(self):
         '''SYNCHronize'''
@@ -68,101 +61,83 @@ class Browser_operator:
         print(self.url)
         self.url = self.driver.current_url
 
-        self.status = ( "/watch?" in self.url )
-
-
+        self.status = ("/watch?" in self.url)
 
     def press_f_key(self):
         '''UNUSED'''
         self.synch()
 
         '''Switching between modes'''
-        if ( not self.status ):
+        if (not self.status):
             '''User is not in video section'''
             return
-
 
         self.keyboard.press('f')
         self.keyboard.release('f')
         self.full_screen = True
 
-
-
     def press_space(self):
         '''UNUSED'''
         self.synch()
         '''Pause/Go'''
-        if ( not self.status ):
+        if (not self.status):
             '''User is not in video section'''
             return
-
 
         self.keyboard.press(Key.space)
         self.keyboard.release(Key.space)
 
-
-
     def press_upper_key(self):
         '''UNUSED'''
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
-
 
         self.keyboard.press(Key.up)
         self.keyboard.release(Key.up)
 
-
-
     def press_right_key(self):
         '''UNUSED'''
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
-
 
         self.keyboard.press(Key.right)
         self.keyboard.release(Key.right)
 
-
-
     def press_down_key(self):
         '''UNUSED'''
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
-
 
         self.keyboard.press(Key.down)
         self.keyboard.release(Key.down)
 
-
-
     def press_left_key(self):
         '''UNUSED'''
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         self.keyboard.press(Key.left)
         self.keyboard.release(Key.left)
 
-
     def shift_down(self):
 
-        if (self.next_video_decision > 1 and self.next_video_decision < 39):
+        if self.next_video_decision > 1 and self.next_video_decision < 39:
             print("OK")
             print(self.next_video_decision - 1 - self.current_shifts)
-            self.scroll_down_by( ( self.next_video_decision - 1 - self.current_shifts) * 102)
-            self.current_shifts = ( self.next_video_decision - 1 )
+            self.scroll_down_by((self.next_video_decision - 1 - self.current_shifts) * 102)
+            self.current_shifts = (self.next_video_decision - 1)
 
     def shift_up(self):
-        if ( self.next_video_decision > 0 and self.next_video_decision < 38 ):
-            self.scroll_up_by( ( self.next_video_decision - 1 - self.current_shifts) * 102 )
+        if self.next_video_decision > 0 and self.next_video_decision < 38:
+            self.scroll_up_by((self.next_video_decision - 1 - self.current_shifts) * 102)
             self.current_shifts = self.next_video_decision - 1
 
     def go_to_top_of_the_page(self):
@@ -171,135 +146,112 @@ class Browser_operator:
 
     def decrement_video_id_decision(self):
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         self.unhighlight_browser_element(self.driver.find_elements_by_id("video-title")[self.next_video_decision])
 
-
         self.next_video_decision -= 1
-        if ( self.next_video_decision < 0 ):
+        if self.next_video_decision < 0:
             self.next_video_decision = 0
-
 
         self.highlight_browser_element(self.driver.find_elements_by_id("video-title")[self.next_video_decision])
 
         self.shift_up()
 
-
     def increment_video_id_decision(self):
         self.synch()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         self.unhighlight_browser_element(self.driver.find_elements_by_id("video-title")[self.next_video_decision])
 
-
         self.next_video_decision = (self.next_video_decision + 1)
-        if ( self.next_video_decision > 39 ):
+        if self.next_video_decision > 39:
             self.next_video_decision = 39
-
 
         self.highlight_browser_element(self.driver.find_elements_by_id("video-title")[self.next_video_decision])
 
         '''measuring how many shifts has to be done'''
-        if ( self.current_shifts > ( 40 - 3 ) ):
-            self.currrent_shifts = ( 40 -3 )
+        if self.current_shifts > (40 - 3):
+            self.currrent_shifts = (40 - 3)
 
         self.shift_down()
 
     def decrease_volume(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         movie_screen = self.driver.find_element_by_id("movie_player")
         movie_screen.send_keys(Keys.DOWN)
 
-
-
-
     def increase_volume(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         movie_screen = self.driver.find_element_by_id("movie_player")
         movie_screen.send_keys(Keys.UP)
 
-
-
-
     def skip_right(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         movie_screen = self.driver.find_element_by_id("movie_player")
         movie_screen.send_keys(Keys.RIGHT)
 
-
-
     def skip_left(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         movie_screen = self.driver.find_element_by_id("movie_player")
         movie_screen.send_keys(Keys.LEFT)
 
-
-
-
     def stop_or_continue(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( not self.status ):
+        if not self.status:
             '''User is not in video section'''
             return
 
         movie_screen = self.driver.find_element_by_id("movie_player")
         movie_screen.click()
 
-
-
     def like(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( ( not self.status ) and ( not self.full_screen ) ):
+        if (not self.status) and (not self.full_screen):
             '''User is not in video section'''
             return
         '''19 is index of like button'''
         self.driver.find_elements_by_id("button")[19].click()
 
-
-
     def not_like(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( ( not self.status ) and ( not self.full_screen ) ):
+        if (not self.status) and (not self.full_screen):
             '''User is not in video section'''
             return
         '''20 is index of like button'''
         self.driver.find_elements_by_id("button")[20].click()
 
-
-
-
     def change_video(self):
         self.synch()
         self.go_to_top_of_the_page()
-        if ( ( not self.status ) and ( not self.full_screen ) ):
+        if (not self.status) and (not self.full_screen):
             '''User is not in video section'''
             return
 
@@ -309,9 +261,6 @@ class Browser_operator:
         self.driver.find_elements_by_id("video-title")[self.next_video_decision].click()
         self.next_video_decision = 0
 
-
-
-
     def change_screen_mode(self):
         self.synch()
         self.go_to_top_of_the_page()
@@ -319,11 +268,8 @@ class Browser_operator:
             '''User is not in video section'''
             return
 
-
         whole_page = self.driver.find_element_by_xpath("/html")
         whole_page.send_keys("f")
-
-
 
     def radio(self):
         self.synch()
@@ -332,9 +278,6 @@ class Browser_operator:
         self.driver.find_elements_by_id("button")[8].click()
         self.driver.find_elements_by_id("label")[2].click()
 
-
-
-
     def take_identifier_and_password(self):
         '''Temporary method'''
         self.identifier = input()
@@ -342,11 +285,9 @@ class Browser_operator:
         self.password = input()
         print(self.password)
 
-
-
     def login(self):
 
-        if ( self.identifier is None or self.password is None ):
+        if (self.identifier is None or self.password is None):
             return
 
         self.synch()
@@ -359,7 +300,6 @@ class Browser_operator:
 
         time.sleep(1)
 
-
         'if login passes then it goes for password, else it falls back'
         try:
             self.driver.find_element_by_name("password").send_keys(self.password)
@@ -367,16 +307,12 @@ class Browser_operator:
         except:
             self.driver.back()
 
-
         'if password does not pass, fall back twice'
         'There is no element such as passwordNext if user has logged in succesfuly'
-        if ( len(self.driver.find_elements_by_id("passwordNext")) != 0 ):
+        if (len(self.driver.find_elements_by_id("passwordNext")) != 0):
             self.driver.back()
             time.sleep(0.5)
             self.driver.back()
-
-
-
 
     def __str__(self):
         out = "Driver:"
@@ -390,8 +326,6 @@ class Browser_operator:
         out += "\nFull_screen:"
         out += str(self.full_screen)
         return out
-
-
 
 
 '''W istalacji będzie musiało być pobranie chromedriver'a do konkretnej, względnej ścieżki'''
