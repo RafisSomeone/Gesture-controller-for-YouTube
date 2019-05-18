@@ -9,6 +9,16 @@ left_clicked = False
 mouse_drawing_rect_coords = []
 
 
+def all_same(table):
+    tmp = table[0]
+    if tmp == 0:
+        return False
+    for x in table:
+        if x != tmp:
+            return False
+    return True
+
+
 def handle_mouse_event(event, x, y, flags, param):
     global left_clicked
     global mouse_drawing_rect_coords
@@ -42,6 +52,7 @@ class CameraOperator:
         '''This attribute stores current user decision'''
         self.status = None
         self.status_move = None
+        self.block = None
 
         '''This attribute shows if observer took status'''
         self.status_delivered = True
@@ -64,6 +75,79 @@ class CameraOperator:
 
         return cropped_image
 
+    def making_output(self, frame,left_up_corner_y,left_up_corner_x,right_down_corner_y,right_down_corner_x):
+
+        h = right_down_corner_y - left_up_corner_y
+        w = right_down_corner_x - left_up_corner_x
+        shift = 30
+
+        cv2.putText(frame, "Mode: " + str(self.status), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                    (0, 0, 255), 1)
+        if self.status == 1:
+            cv2.putText(frame, "RADIO", (left_up_corner_x - shift, int(left_up_corner_y+h/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        (0, 0, 255), 1)
+            # cv2.putText(frame, "lewo góra", (left_up_corner_x -shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            # cv2.putText(frame, "Środek", (int(left_up_corner_x + w/2)-shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            cv2.putText(frame, "LOGIN", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+        if self.status == 2:
+            cv2.putText(frame, "VOL -", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        (0, 0, 255), 1)
+            cv2.putText(frame, "DISLIKE", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+            # cv2.putText(frame, "Środek", (int(left_up_corner_x + w/2)-shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            cv2.putText(frame, "LIKE", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+            cv2.putText(frame, "Vol +", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+        if self.status == 3:
+            cv2.putText(frame, "<---", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        (0, 0, 255), 1)
+            # cv2.putText(frame, "lewo góra", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            cv2.putText(frame, "OKk", (int(left_up_corner_x + w / 2) - shift, left_up_corner_y),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            cv2.putText(frame, "-->", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+        if self.status == 4:
+            cv2.putText(frame, "<<<", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        (0, 0, 255), 1)
+            cv2.putText(frame, "B", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+            cv2.putText(frame, "|> ||", (int(left_up_corner_x + w / 2) - shift, left_up_corner_y),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.35,
+            #             (0, 0, 255), 1)
+            cv2.putText(frame, ">>>", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.35,
+                        (0, 0, 255), 1)
+
     def operate_cropped_file(self, thresh, img):
 
         if thresh is not None and img is not None:
@@ -76,18 +160,23 @@ class CameraOperator:
                 x, y, w, h = cv.boundingRect(contour)
 
                 cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 255), 0)
-                if x < 10:
-                    self.status_move = 1
-                else:
-                    if x + w == img.shape[1]:
-                        self.status_move = -1
-                    else:
-                        if y == 0:
-                            self.status_move = 2
-                        else:
-                            self.status_move = 0
 
-                print(self.status_move)
+                if x == 0 and y == 0:
+                    self.status_move = 3
+                else:
+                    if x + w == img.shape[1] and y == 0:
+                        self.status_move = 4
+                    else:
+                        if x + w == img.shape[1]:
+                            self.status_move = 1
+                        else:
+                            if x == 0:
+                                self.status_move = -1
+                            else:
+                                if y == 0:
+                                    self.status_move = 2
+                                else:
+                                    self.status_move = 0
 
                 hull = cv.convexHull(contour)
 
@@ -116,14 +205,14 @@ class CameraOperator:
                             cv.circle(img, far, 1, [0, 0, 255], -1)
 
                         cv.line(img, start, end, [0, 255, 0], 2)
-
-                    self.status = count_defects
+                    if not self.block:
+                        self.status = count_defects
 
                     all = np.hstack((drawing, img))
                     # cv.imshow("Contours", all)
 
             except ValueError:
-                print("err")
+                print("err or")
 
     def start(self):
 
@@ -138,21 +227,25 @@ class CameraOperator:
         cv2.moveWindow(main, 1800, 0)
 
         thresh1 = None
-        darkness = 20
+        darkness = 80
         flag = 1
         ly = 0
         lx = 0
         lw = 0
         lh = 0
-        first_gray = None
+        self.block = False
+        # first_gray = None
         fist_detection = True
-        mode = 1
+        mode = 2
+        detection = False
+        time_to_set = 5
+        last_modes = np.zeros(time_to_set)
+        i = 0
         while capture.isOpened() and (not self.leave):
-
+            print(last_modes, i, self.status)
             '''Reading image:'''
             ret, frame = capture.read()
 
-            frame_to_see = frame
             if ret == False:
                 print("Failed to catch")
 
@@ -165,14 +258,15 @@ class CameraOperator:
                 cropped_thresh = None
 
             if fist_detection:
+
                 for x, y, w, h in fist:
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                    self.block = False
                     if fist != ():
                         ly = x
                         lx = y
                         lw = w
                         lh = h
-
                         flag = 0
 
             if flag == 0:
@@ -190,7 +284,7 @@ class CameraOperator:
                 if right_down_corner_x > frame.shape[1]:
                     right_down_corner_x: frame.shape[1]
                 cropped_image = frame[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
-                if first_gray is not None and thresh1 is not None:
+                if thresh1 is not None:
                     cropped_thresh = thresh1[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
                     cv2.rectangle(frame, (left_up_corner_x, left_up_corner_y),
                                   (right_down_corner_x, right_down_corner_y), (255, 255, 0))
@@ -198,28 +292,36 @@ class CameraOperator:
                 #
                 #     cv2.imshow('sd', cropped_image)
 
-                self.operate_cropped_file(cropped_thresh, cropped_image)
+                if detection:
+                    self.operate_cropped_file(cropped_thresh, cropped_image)
+                    last_modes[i] = self.status
+                    i += 1
+                    if i == time_to_set:
+                        i = 0
+                    if all_same(last_modes):
+                        self.block = True
+                        self.making_output(frame,left_up_corner_y,left_up_corner_x,right_down_corner_y,right_down_corner_x)
 
             cv2.imshow(main, frame)
 
-            difference = None
-            if first_gray is not None:
+            # difference = None
+            if gray is not None:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
                 # In each iteration, calculate absolute difference between current frame and reference frame
-                difference = cv2.absdiff(gray, first_gray)
-                median = cv2.medianBlur(difference, 15)
+                # difference = cv2.absdiff(gray, first_gray)
+                # median = cv2.medianBlur(difference, 15)
                 median2 = cv2.medianBlur(gray, 15)
                 # difference = cv2.GaussianBlur(difference, (40, 40), 0)
                 # Apply thresholding to eliminate noise
-                ret, thresh1 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
-                ret, thresh2 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
+                # ret, thresh2 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
+                ret, thresh1 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
                 cv2.imshow("get", thresh1)
-                cv2.imshow("get2", thresh2)
+                # cv2.imshow("get2", thresh2)
 
-            if mode % 2 == 0:
-                thresh1 = thresh2
+                # if mode % 2 == 0:
+                #     thresh1 = thresh2
 
             # '''Label printing:'''
             # if printing_label:
@@ -252,15 +354,18 @@ class CameraOperator:
 
             key_pressed = cv2.waitKey(10)
 
-            if key_pressed == ord('p'):
-                ret, first = capture.read()
-                first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
-
-                first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
-                flag = 1
+            # if key_pressed == ord('p'):
+            #     ret, first = capture.read()
+            #     first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
+            #
+            #     first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
+            #     flag = 1
 
             if key_pressed == ord('l'):
                 fist_detection = not fist_detection
+
+            if key_pressed == ord('h'):
+                detection = not detection
 
             if key_pressed == ord('+'):
                 darkness += 1

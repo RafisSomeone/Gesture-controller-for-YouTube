@@ -5,57 +5,68 @@ import threading
 import time
 
 
+
+def mode_one(camera_operator, browser_operator):
+    if camera_operator.status_move == -1:
+        browser_operator.radio()
+    if camera_operator.status_move == 1:
+        browser_operator.login()
+
+
+def mode_two(camera_operator, browser_operator):
+    if camera_operator.status_move == -1:
+        browser_operator.decrease_volume()
+    if camera_operator.status_move == 1:
+        browser_operator.increase_volume()
+    if camera_operator.status_move == 3:
+        browser_operator.like()
+    if camera_operator.status_move == 4:
+        browser_operator.not_like()
+
+
+def mode_three(camera_operator, browser_operator):
+    if camera_operator.status_move == -1:
+        browser_operator.decrement_video_id_decision()
+    if camera_operator.status_move == 1:
+        browser_operator.increment_video_id_decision()
+    if camera_operator.status_move == 2:
+        browser_operator.change_video()
+
+
+def mode_four(camera_operator, browser_operator):
+    if camera_operator.status_move == -1:
+        browser_operator.skip_left()
+    if camera_operator.status_move == 1:
+        browser_operator.skip_right()
+    if camera_operator.status_move == 2:
+        browser_operator.stop_or_continue()
+    if camera_operator.status_move == 3:
+        browser_operator.change_screen_mode()
+
 def main():
     camera_operator = CameraOperator()
-    camera_operator_thread = threading.Thread( target = camera_operator.start , args = [] )
+    camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
     camera_operator_thread.start()
     # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
     # camera_operator_thread.start()
-
-    '''TODO względne sciezki!!!'''
-
-
     browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver")
-    while(True):
-        if ( camera_operator.status != -1 ):
+    while True:
 
-            if (camera_operator.status_move == 1):
-                browser_operator.increase_volume()
-            if (camera_operator.status_move == -1):
-                browser_operator.decrease_volume()
+        # print(camera_operator.status_move, camera_operator.status,camera_operator.block)
 
-            if ( camera_operator.status == ord('a') ):
-                browser_operator.like()
-            if (camera_operator.status == ord('s') ):
-                browser_operator.not_like()
-            if ( camera_operator.status == ord('f') ):
-                browser_operator.increment_video_id_decision()
-            if ( camera_operator.status == ord('d') ):
-                browser_operator.decrement_video_id_decision()
-            if ( camera_operator.status == ord('g')):
-                browser_operator.change_video()
-            if ( camera_operator.status == ord('z')):
-                browser_operator.decrease_volume()
-            if ( camera_operator.status == ord('x')):
-                browser_operator.increase_volume()
-            if ( camera_operator.status == ord('c')):
-                browser_operator.skip_left()
-            if ( camera_operator.status == ord('v')):
-                browser_operator.skip_right()
-            if ( camera_operator.status == ord('b')):
-                browser_operator.change_screen_mode()
-            if ( camera_operator.status == ord('n')):
-                browser_operator.stop_or_continue()
-            if ( camera_operator.status == ord('m')):
-                browser_operator.radio()
-            if ( camera_operator.status == ord('j')):
-                browser_operator.take_identifier_and_password()
-                browser_operator.login()
-            if ( camera_operator.status == ord('k')):
-                browser_operator.go_to_top_of_the_page()
-            print(camera_operator.status)
+        if camera_operator.status != -1:
 
+            # if camera_operator.status == 1:
+            #     mode_one(camera_operator, browser_operator)
 
+            if camera_operator.status == 2:
+                mode_two(camera_operator, browser_operator)
+
+            if camera_operator.status == 3:
+                mode_three(camera_operator, browser_operator)
+
+            if camera_operator.status == 4:
+                mode_four(camera_operator, browser_operator)
 
             '''KOMENTARZ DO USUNIĘCIA:
             Ten delay jest po to żeby nie zbierać kilka razy tego samego
@@ -63,8 +74,6 @@ def main():
              przydzielenia czasu temu co obsługuje kamerę zmienna status jest niezmieniona, co jest nieprawidłowe bo ona
              się ma zmieniac od razu na -1 '''
             time.sleep(0.1)
-
-
 
 
 main()
