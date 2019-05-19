@@ -28,7 +28,7 @@ class Browser_operator:
         self.driver = webdriver.Chrome(path)
         self.driver.set_page_load_timeout(10)
 
-        self.driver.get("https://www.youtube.com/watch?v=8kVI621fZug")
+        self.driver.get("https://www.youtube.com/watch?v=McnMsFwZlvA")
 
         self.keyboard = Controller()
 
