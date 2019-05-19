@@ -280,7 +280,8 @@ class Browser_operator:
         whole_page = self.driver.find_element_by_xpath("/html")
         whole_page.send_keys("f")
 
-    def radio(self):
+    def __radio(self):
+        """UNUSED"""
         self.synch()
         self.go_to_top_of_the_page()
 
