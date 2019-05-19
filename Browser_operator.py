@@ -41,6 +41,14 @@ class Browser_operator:
         self.next_video_decision = 0
 
         self.full_screen = False
+        
+        self.radio_mode = False
+        self.last_radio_station = 0
+        self.radio_stations =[
+                               "https://www.youtube.com/watch?v=taD9hqwCb1o",
+                               "https://www.youtube.com/watch?v=6dHrafwh974",
+                               "https://www.youtube.com/watch?v=6dHrafwh974"
+                             ]
 
         '''Following variable shows how many times screen has been scrolled
         screen is scrolled every time, user wants to change next video decision
@@ -314,7 +322,19 @@ class Browser_operator:
             self.driver.back()
             time.sleep(0.5)
             self.driver.back()
+    
+    def radio(self):
+        if not self.radio_mode :
+            self.driver.get( self.radio_stations [ self.last_radio_station ] )
+        else:
+            self.driver.back()
+            self.last_radio_station = ( self.last_radio_station + 1 ) % 3
 
+
+
+        self.radio_mode = not self.radio_mode
+        
+        
     def __str__(self):
         out = "Driver:"
         out += str(self.driver)
