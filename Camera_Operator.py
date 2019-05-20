@@ -1,3 +1,5 @@
+from reportlab.graphics.shapes import Rect
+
 from Operation import *
 from copy import deepcopy
 import cv2
@@ -7,6 +9,20 @@ import math
 
 left_clicked = False
 mouse_drawing_rect_coords = []
+
+
+def put_icon_on_image(x, y, icon, frame):
+    x_offset = x
+    y_offset = y
+    y1, y2 = y_offset, y_offset + icon.shape[0]
+    x1, x2 = x_offset, x_offset + icon.shape[1]
+
+    alpha_s = icon[:, :, 3] / 255.0
+    alpha_l = 1.0 - alpha_s
+
+    for c in range(0, 3):
+        frame[y1:y2, x1:x2, c] = (alpha_s * icon[:, :, c] +
+                                  alpha_l * frame[y1:y2, x1:x2, c])
 
 
 def all_same(table):
@@ -75,78 +91,55 @@ class CameraOperator:
 
         return cropped_image
 
-    def making_output(self, frame,left_up_corner_y,left_up_corner_x,right_down_corner_y,right_down_corner_x):
-
+    def making_output(self, frame, left_up_corner_y, left_up_corner_x, right_down_corner_y, right_down_corner_x):
+        play = cv2.imread("play.png", -1)
+        forward5 = cv2.imread("forward5.png", -1)
+        backward5 = cv2.imread("backward5.png", -1)
+        fullscreen = cv2.imread("fullscreen.png", -1)
+        up = cv2.imread("up.png", -1)
+        down = cv2.imread("down.png", -1)
+        ok = cv2.imread("ok.png", -1)
+        dislike = cv2.imread("dislike.png", -1)
+        like = cv2.imread("like.png", -1)
+        vol_up = cv2.imread("vol_up.png", -1)
+        vol_down = cv2.imread("vol_low.png", -1)
+        login = cv2.imread("login.png", -1)
+        radio = cv2.imread("radio.png", -1)
+        shift = 25
         h = right_down_corner_y - left_up_corner_y
         w = right_down_corner_x - left_up_corner_x
-        shift = 30
 
         cv2.putText(frame, "Mode: " + str(self.status), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35,
                     (0, 0, 255), 1)
         if self.status == 1:
-            cv2.putText(frame, "RADIO", (left_up_corner_x - shift, int(left_up_corner_y+h/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.35,
-                        (0, 0, 255), 1)
-            # cv2.putText(frame, "lewo góra", (left_up_corner_x -shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            # cv2.putText(frame, "Środek", (int(left_up_corner_x + w/2)-shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            cv2.putText(frame, "LOGIN", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
+            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, radio, frame)
+
+            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, login, frame)
+
         if self.status == 2:
-            cv2.putText(frame, "VOL -", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
-                        (0, 0, 255), 1)
-            cv2.putText(frame, "DISLIKE", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
-            # cv2.putText(frame, "Środek", (int(left_up_corner_x + w/2)-shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            cv2.putText(frame, "LIKE", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
-            cv2.putText(frame, "Vol +", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
+            put_icon_on_image(left_up_corner_x, left_up_corner_y, dislike, frame)
+
+            put_icon_on_image(right_down_corner_x - 2 * shift, left_up_corner_y, like, frame)
+
+            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, vol_down, frame)
+
+            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, vol_up, frame)
+
         if self.status == 3:
-            cv2.putText(frame, "<---", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
-                        (0, 0, 255), 1)
-            # cv2.putText(frame, "lewo góra", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            cv2.putText(frame, "OKk", (int(left_up_corner_x + w / 2) - shift, left_up_corner_y),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
-            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            cv2.putText(frame, "-->", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
+            put_icon_on_image(int(left_up_corner_x + w / 2) - shift, left_up_corner_y, ok, frame)
+
+            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, up, frame)
+
+            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, down, frame)
+
         if self.status == 4:
-            cv2.putText(frame, "<<<", (left_up_corner_x - shift, int(left_up_corner_y + h / 2)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
-                        (0, 0, 255), 1)
-            cv2.putText(frame, "B", (left_up_corner_x - shift, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
-            cv2.putText(frame, "|> ||", (int(left_up_corner_x + w / 2) - shift, left_up_corner_y),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
-            # cv2.putText(frame, "Prawo góra", (right_down_corner_x, left_up_corner_y), cv2.FONT_HERSHEY_SIMPLEX,
-            #             0.35,
-            #             (0, 0, 255), 1)
-            cv2.putText(frame, ">>>", (right_down_corner_x, int(left_up_corner_y + h / 2)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.35,
-                        (0, 0, 255), 1)
+            put_icon_on_image(left_up_corner_x, left_up_corner_y, fullscreen, frame)
+
+            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, backward5, frame)
+
+            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, forward5, frame)
+
+            put_icon_on_image(int(left_up_corner_x + w / 2) - shift, left_up_corner_y, play, frame)
 
     def operate_cropped_file(self, thresh, img):
 
@@ -234,7 +227,7 @@ class CameraOperator:
         lw = 0
         lh = 0
         self.block = False
-        # first_gray = None
+        first_gray = None
         fist_detection = True
         mode = 2
         detection = False
@@ -269,6 +262,29 @@ class CameraOperator:
                         lh = h
                         flag = 0
 
+
+
+            difference = None
+
+            if first_gray is not None:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gray = cv2.GaussianBlur(gray, (21, 21), 0)
+
+                # In each iteration, calculate absolute difference between current frame and reference frame
+                difference = cv2.absdiff(gray, first_gray)
+
+                median2 = cv2.medianBlur(gray, 15)
+                # difference = cv2.GaussianBlur(difference, (40, 40), 0)
+                median = cv2.medianBlur(difference, 15)
+                # Apply thresholding to eliminate noise
+                ret, thresh2 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
+                ret, thresh1 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
+                cv2.imshow("get", thresh1)
+                cv2.imshow("get2", thresh2)
+
+                if mode % 2 == 0:
+                    thresh1 = thresh2
+
             if flag == 0:
 
                 left_up_corner_y = lx - lw
@@ -300,31 +316,13 @@ class CameraOperator:
                         i = 0
                     if all_same(last_modes):
                         self.block = True
-                        self.making_output(frame,left_up_corner_y,left_up_corner_x,right_down_corner_y,right_down_corner_x)
+                        self.making_output(frame, left_up_corner_y, left_up_corner_x, right_down_corner_y,
+                                           right_down_corner_x)
 
             cv2.imshow(main, frame)
 
-            # difference = None
-            if gray is not None:
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                gray = cv2.GaussianBlur(gray, (21, 21), 0)
-
-                # In each iteration, calculate absolute difference between current frame and reference frame
-                # difference = cv2.absdiff(gray, first_gray)
-                # median = cv2.medianBlur(difference, 15)
-                median2 = cv2.medianBlur(gray, 15)
-                # difference = cv2.GaussianBlur(difference, (40, 40), 0)
-                # Apply thresholding to eliminate noise
-                # ret, thresh2 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
-                ret, thresh1 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
-                cv2.imshow("get", thresh1)
-                # cv2.imshow("get2", thresh2)
-
-                # if mode % 2 == 0:
-                #     thresh1 = thresh2
-
             # '''Label printing:'''
-            # if printing_label:
+            # if printing_label:q
             #     cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
             #     cv2.putText(output,
             #                 "Callibrate threshold using W and S key untill your hand will have good contrast with background.",
@@ -354,12 +352,12 @@ class CameraOperator:
 
             key_pressed = cv2.waitKey(10)
 
-            # if key_pressed == ord('p'):
-            #     ret, first = capture.read()
-            #     first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
-            #
-            #     first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
-            #     flag = 1
+            if key_pressed == ord('p'):
+                ret, first = capture.read()
+                first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
+
+                first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
+                flag = 1
 
             if key_pressed == ord('l'):
                 fist_detection = not fist_detection
