@@ -3,14 +3,17 @@ from Camera_Operator import CameraOperator
 from Operation import *
 import threading
 import time
+import sys
 
 
 
 def mode_one(camera_operator, browser_operator):
-    if camera_operator.status_move == -1:
-        browser_operator.radio()
     if camera_operator.status_move == 1:
+        browser_operator.radio()
+
+    if camera_operator.status_move == -1:
         browser_operator.login()
+    time.sleep(1)
 
 
 def mode_two(camera_operator, browser_operator):
@@ -20,8 +23,10 @@ def mode_two(camera_operator, browser_operator):
         browser_operator.increase_volume()
     if camera_operator.status_move == 3:
         browser_operator.like()
+        time.sleep(1)
     if camera_operator.status_move == 4:
         browser_operator.not_like()
+        time.sleep(1)
 
 
 def mode_three(camera_operator, browser_operator):
@@ -31,6 +36,7 @@ def mode_three(camera_operator, browser_operator):
         browser_operator.increment_video_id_decision()
     if camera_operator.status_move == 2:
         browser_operator.change_video()
+        time.sleep(1)
 
 
 def mode_four(camera_operator, browser_operator):
@@ -40,15 +46,21 @@ def mode_four(camera_operator, browser_operator):
         browser_operator.skip_right()
     if camera_operator.status_move == 2:
         browser_operator.stop_or_continue()
+        time.sleep(1)
     if camera_operator.status_move == 3:
         browser_operator.change_screen_mode()
+        time.sleep(1)
+
 
 def main():
+
+
     camera_operator = CameraOperator()
     camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
     camera_operator_thread.start()
-    # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
-    # camera_operator_thread.start()
+    #camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
+    #camera_operator_thread.start()
+
     browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver")
     while True:
 
@@ -56,8 +68,8 @@ def main():
 
         if camera_operator.status != -1:
 
-            # if camera_operator.status == 1:
-            #     mode_one(camera_operator, browser_operator)
+            if camera_operator.status == 1:
+                mode_one(camera_operator, browser_operator)
 
             if camera_operator.status == 2:
                 mode_two(camera_operator, browser_operator)

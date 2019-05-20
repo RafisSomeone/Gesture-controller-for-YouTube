@@ -6,6 +6,7 @@ import cv2
 import cv2 as cv
 import numpy as np
 import math
+import subprocess
 
 left_clicked = False
 mouse_drawing_rect_coords = []
@@ -91,7 +92,7 @@ class CameraOperator:
 
         return cropped_image
 
-    def making_output(self, frame, left_up_corner_y, left_up_corner_x, right_down_corner_y, right_down_corner_x):
+    def making_output(self, frame, left_up_corner_y, left_up_corner_x, right_down_corner_y, right_down_corner_x,tlo):
         play = cv2.imread("play.png", -1)
         forward5 = cv2.imread("forward5.png", -1)
         backward5 = cv2.imread("backward5.png", -1)
@@ -109,8 +110,8 @@ class CameraOperator:
         h = right_down_corner_y - left_up_corner_y
         w = right_down_corner_x - left_up_corner_x
 
-        cv2.putText(frame, "Mode: " + str(self.status), (15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.35,
-                    (0, 0, 255), 1)
+        cv2.putText(tlo, "Mode: " + str(self.status), (50,60), cv2.FONT_HERSHEY_TRIPLEX, 2,
+                    (255, 255, 0), 4)
         if self.status == 1:
             put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, radio, frame)
 
@@ -209,15 +210,19 @@ class CameraOperator:
 
     def start(self):
 
+        width, height = 1920, 1080
+
+
+        cv2.namedWindow("display", cv2.WINDOW_NORMAL)
+        # cv2.setWindowProperty("display", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
+        image_w, image_h = 640, 480
+
         capture = cv2.VideoCapture(0)
 
         key_pressed = 'q'
 
         fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
-
-        main = "main"
-        cv2.namedWindow(main)  # Create a named window
-        cv2.moveWindow(main, 1800, 0)
 
         thresh1 = None
         darkness = 80
@@ -234,7 +239,10 @@ class CameraOperator:
         time_to_set = 5
         last_modes = np.zeros(time_to_set)
         i = 0
+
         while capture.isOpened() and (not self.leave):
+
+            tlo = cv2.imread("tlo.jpg", 1)
             print(last_modes, i, self.status)
             '''Reading image:'''
             ret, frame = capture.read()
@@ -262,8 +270,6 @@ class CameraOperator:
                         lh = h
                         flag = 0
 
-
-
             difference = None
 
             if first_gray is not None:
@@ -279,12 +285,24 @@ class CameraOperator:
                 # Apply thresholding to eliminate noise
                 ret, thresh2 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
                 ret, thresh1 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
-                cv2.imshow("get", thresh1)
-                cv2.imshow("get2", thresh2)
+                curr1 = cv2.cvtColor(thresh1, cv2.COLOR_GRAY2BGR)
+                curr2 = cv2.cvtColor(thresh2, cv2.COLOR_GRAY2BGR)
 
                 if mode % 2 == 0:
                     thresh1 = thresh2
+                    curr1 = curr2
+                    name_detection= "detection by picture difference"
+                else:
+                    name_detection= "detection by light"
 
+                cv2.putText(curr1, name_detection, (15, 15), cv2.FONT_HERSHEY_TRIPLEX, 0.50,
+                                (255, 255, 0), 1)
+
+                x_offset = 50
+                y_offset = image_h + 100
+                tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = curr1
+
+            print(frame.shape[0], frame.shape[1])
             if flag == 0:
 
                 left_up_corner_y = lx - lw
@@ -317,9 +335,12 @@ class CameraOperator:
                     if all_same(last_modes):
                         self.block = True
                         self.making_output(frame, left_up_corner_y, left_up_corner_x, right_down_corner_y,
-                                           right_down_corner_x)
+                                           right_down_corner_x,tlo)
 
-            cv2.imshow(main, frame)
+            x_offset = 50
+            y_offset = 75
+            tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = frame
+            cv2.imshow("display", tlo)
 
             # '''Label printing:'''
             # if printing_label:q

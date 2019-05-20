@@ -28,7 +28,9 @@ class Browser_operator:
         self.driver = webdriver.Chrome(path)
         self.driver.set_page_load_timeout(10)
 
-        self.driver.get("https://www.youtube.com/watch?v=McnMsFwZlvA")
+        self.driver.get("https://www.youtube.com/watch?v=cGNUpEerm9E")
+        self.driver.set_window_size(1080, 1080)
+        self.driver.set_window_position(800, 0)
 
         self.keyboard = Controller()
 
@@ -329,12 +331,15 @@ class Browser_operator:
             self.driver.get( self.radio_stations [ self.last_radio_station ] )
         else:
             self.driver.back()
-            self.last_radio_station = ( self.last_radio_station + 1 ) % 3
 
-
-
+        '''Changing radio mode'''
         self.radio_mode = not self.radio_mode
-        
+
+
+    def radio_next_station(self):
+        self.last_radio_station = (self.last_radio_station + 1) % 3
+    def radio_previous_station(self):
+        self.last_radio_station = (self.last_radio_station - 1) % 3
         
     def __str__(self):
         out = "Driver:"
