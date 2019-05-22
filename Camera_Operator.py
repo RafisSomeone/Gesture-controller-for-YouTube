@@ -217,7 +217,7 @@ class CameraOperator:
         width, height = 1920, 1080
 
 
-        cv2.namedWindow("display", cv2.WINDOW_NORMAL)
+        cv2.namedWindow("display", cv2.WINDOW_AUTOSIZE)
         # cv2.setWindowProperty("display", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         image_w, image_h = 640, 480
@@ -344,7 +344,12 @@ class CameraOperator:
             x_offset = 50
             y_offset = 75
             tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = frame
-            cv2.imshow("display", tlo)
+
+            x_offset = int (width / 3)
+            y_offset = int (height / 3)
+            display = tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]]
+
+            cv2.imshow("display", display)
 
             # '''Label printing:'''
             # if printing_label:q
