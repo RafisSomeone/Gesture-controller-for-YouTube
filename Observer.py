@@ -6,13 +6,16 @@ import time
 import sys
 
 
-
 def mode_one(camera_operator, browser_operator):
     if camera_operator.status_move == 1:
-        browser_operator.radio()
+        browser_operator.radio_next_station()
 
     if camera_operator.status_move == -1:
-        browser_operator.login()
+        browser_operator.radio_previous_station()
+
+    if camera_operator.status_move == 2:
+        browser_operator.radio()
+
     time.sleep(1)
 
 
@@ -53,13 +56,11 @@ def mode_four(camera_operator, browser_operator):
 
 
 def main():
-
-
     camera_operator = CameraOperator()
     camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
     camera_operator_thread.start()
-    #camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
-    #camera_operator_thread.start()
+    # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
+    # camera_operator_thread.start()
 
     browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver")
     while True:

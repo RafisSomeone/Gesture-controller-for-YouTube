@@ -106,6 +106,8 @@ class CameraOperator:
         vol_down = cv2.imread("vol_low.png", -1)
         login = cv2.imread("login.png", -1)
         radio = cv2.imread("radio.png", -1)
+        radioleft  = cv2.imread("radioleft.png",-1)
+        radioright = cv2.imread("radioright.png", -1)
         shift = 25
         h = right_down_corner_y - left_up_corner_y
         w = right_down_corner_x - left_up_corner_x
@@ -113,9 +115,11 @@ class CameraOperator:
         cv2.putText(tlo, "Mode: " + str(self.status), (50,60), cv2.FONT_HERSHEY_TRIPLEX, 2,
                     (255, 255, 0), 4)
         if self.status == 1:
-            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, radio, frame)
+            put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, radioright, frame)
 
-            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, login, frame)
+            put_icon_on_image(int(left_up_corner_x + w / 2) - shift, left_up_corner_y, radio, frame)
+
+            put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, radioleft, frame)
 
         if self.status == 2:
             put_icon_on_image(left_up_corner_x, left_up_corner_y, dislike, frame)
