@@ -23,12 +23,33 @@ class Browser_operator:
     def scroll_up_by(self, value):
         self.driver.execute_script("window.scrollBy(0," + str(value) + ")")
 
-    def __init__(self, path):
+
+
+    '''Setters for variables used to determine logged in status'''
+    def set_logged_in(self,_logged_in):
+        if ( type(_logged_in ) != bool ):
+            raise(Exception("Invalod _logged_in"))
+        self.logged_in = _logged_in
+
+    def set_logging_in_state(self, _logging_in_state):
+        if ( type(_logging_in_state) != bool ):
+            raise(Exception("Invalid _logging in state"))
+        self.logging_in_state = _logging_in_state
+
+
+
+
+    def __init__(self, path, initial_site):
+        self.logged_in = False
+
+        '''Changes to true after class Login finishes it's job'''
+        self.logging_in_state = True
 
         self.driver = webdriver.Chrome(path)
+        #self.driver.fullscreen_window()
         self.driver.set_page_load_timeout(10)
 
-        self.driver.get("https://www.youtube.com/watch?v=cGNUpEerm9E")
+        self.driver.get(initial_site)
         self.driver.set_window_size(1080, 1080)
         self.driver.set_window_position(800, 0)
 
@@ -43,7 +64,7 @@ class Browser_operator:
         self.next_video_decision = 0
 
         self.full_screen = False
-        
+
         self.radio_mode = False
         self.last_radio_station = 0
         self.radio_stations =[
@@ -242,6 +263,11 @@ class Browser_operator:
         movie_screen.click()
 
     def like(self):
+
+        if ( not self.logged_in ):
+            return
+
+
         self.synch()
         self.go_to_top_of_the_page()
         if (not self.status) and (not self.full_screen):
@@ -251,6 +277,10 @@ class Browser_operator:
         self.driver.find_elements_by_id("button")[19].click()
 
     def not_like(self):
+
+        if ( not self.logged_in ):
+            return
+
         self.synch()
         self.go_to_top_of_the_page()
         if (not self.status) and (not self.full_screen):
@@ -290,42 +320,50 @@ class Browser_operator:
         self.driver.find_elements_by_id("button")[8].click()
         self.driver.find_elements_by_id("label")[2].click()
 
-    def take_identifier_and_password(self):
+    def set_identifier_and_password(self, identifier, password):
         '''Temporary method'''
-        self.identifier = input()
-        print(self.identifier)
-        self.password = input()
-        print(self.password)
+        self.identifier = identifier
+        self.password = password
 
     def login(self):
-
-        if (self.identifier is None or self.password is None):
+        if (self.identifier is None or self.password is None or not self.logging_in_state):
             return
 
-        self.synch()
-        self.go_to_top_of_the_page()
-
-        self.driver.find_elements_by_id("button")[17].click()
-
-        self.driver.find_element_by_id("identifierId").send_keys(self.identifier)
-        self.driver.find_element_by_id("identifierNext").click()
-
-        time.sleep(1)
-
-        'if login passes then it goes for password, else it falls back'
         try:
-            self.driver.find_element_by_name("password").send_keys(self.password)
-            self.driver.find_element_by_id("passwordNext").click()
-        except:
-            self.driver.back()
+            self.synch()
+            self.go_to_top_of_the_page()
 
-        'if password does not pass, fall back twice'
-        'There is no element such as passwordNext if user has logged in succesfuly'
-        if (len(self.driver.find_elements_by_id("passwordNext")) != 0):
-            self.driver.back()
-            time.sleep(0.5)
-            self.driver.back()
-    
+
+            self.driver.find_elements_by_id("button")[19].click()
+
+
+            self.driver.find_element_by_id("identifierId").send_keys(self.identifier)
+            self.driver.find_element_by_id("identifierNext").click()
+
+            time.sleep(1)
+
+            'if login passes then it goes for password, else it falls back'
+            try:
+                self.driver.find_element_by_name("password").send_keys(self.password)
+                self.driver.find_element_by_id("passwordNext").click()
+            except:
+                self.driver.back()
+                return False
+
+            'if password does not pass, fall back twice'
+            'There is no element such as passwordNext if user has logged in succesfuly'
+            time.sleep(1)
+            if (len(self.driver.find_elements_by_id("passwordNext")) != 0):
+                self.driver.back()
+                time.sleep(0.5)
+                self.driver.back()
+                print("OK")
+                return False
+
+            return True
+        except:
+            return False
+
     def radio(self):
         if not self.radio_mode :
             self.driver.get( self.radio_stations [ self.last_radio_station ] )
@@ -340,7 +378,7 @@ class Browser_operator:
         self.last_radio_station = (self.last_radio_station + 1) % 3
     def radio_previous_station(self):
         self.last_radio_station = (self.last_radio_station - 1) % 3
-        
+
     def __str__(self):
         out = "Driver:"
         out += str(self.driver)
