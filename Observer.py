@@ -1,10 +1,13 @@
-from Browser_operator import Browser_operator
+from Browser_Operator import Browser_operator
 from Camera_Operator import CameraOperator
 from Operation import *
+from Login import *
 import threading
 import time
 import sys
 
+'''Change to use keyboard'''
+debug = False
 
 def mode_one(camera_operator, browser_operator):
     if camera_operator.status_move == 1:
@@ -33,6 +36,7 @@ def mode_two(camera_operator, browser_operator):
 
 
 def mode_three(camera_operator, browser_operator):
+    print(camera_operator.status_move)
     if camera_operator.status_move == -1:
         browser_operator.decrement_video_id_decision()
     if camera_operator.status_move == 1:
@@ -56,19 +60,31 @@ def mode_four(camera_operator, browser_operator):
 
 
 def main():
+    browser_operator = Browser_operator("/home/michal/chromedriver", "https://www.youtube.com/watch?v=cGNUpEerm9E")
+
+    '''Logging in'''
+    Login(browser_operator)
+
+
+    if ( browser_operator.logging_in_state ):
+        return
+
+
+
+
     camera_operator = CameraOperator()
-    camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
-    camera_operator_thread.start()
-    # camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
-    # camera_operator_thread.start()
+    if ( not debug ):
+        camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
+        camera_operator_thread.start()
+    else:
+        camera_operator_thread = threading.Thread(target=camera_operator.multitasking_keyboard_input_testing, args=[])
+        camera_operator_thread.start()
 
-    browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver")
-    while True:
+    while not debug:
 
-        # print(camera_operator.status_move, camera_operator.status,camera_operator.block)
+        print(camera_operator.status_move, camera_operator.status,camera_operator.block)
 
         if camera_operator.status != -1:
-
             if camera_operator.status == 1:
                 mode_one(camera_operator, browser_operator)
 
@@ -87,6 +103,35 @@ def main():
              przydzielenia czasu temu co obsługuje kamerę zmienna status jest niezmieniona, co jest nieprawidłowe bo ona
              się ma zmieniac od razu na -1 '''
             time.sleep(0.1)
+    while debug:
+        if (camera_operator.status != -1):
 
+            if (camera_operator.status == ord('a')):
+                browser_operator.like()
+            if (camera_operator.status == ord('s')):
+                browser_operator.not_like()
+            if (camera_operator.status == ord('f')):
+                browser_operator.increment_video_id_decision()
+            if (camera_operator.status == ord('d')):
+                browser_operator.decrement_video_id_decision()
+            if (camera_operator.status == ord('g')):
+                browser_operator.change_video()
+            if (camera_operator.status == ord('z')):
+                browser_operator.decrease_volume()
+            if (camera_operator.status == ord('x')):
+                browser_operator.increase_volume()
+            if (camera_operator.status == ord('c')):
+                browser_operator.skip_left()
+            if (camera_operator.status == ord('v')):
+                browser_operator.skip_right()
+            if (camera_operator.status == ord('b')):
+                browser_operator.change_screen_mode()
+            if (camera_operator.status == ord('n')):
+                browser_operator.stop_or_continue()
+            if (camera_operator.status == ord('m')):
+                browser_operator.scroll_down_by(-100)
+            if (camera_operator.status == ord('j')):
+                browser_operator.scroll_down_by(100)
+            print(camera_operator.status)
 
 main()
