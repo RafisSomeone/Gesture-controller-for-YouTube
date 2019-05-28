@@ -1,3 +1,4 @@
+
 from reportlab.graphics.shapes import Rect
 
 from Operation import *
@@ -8,8 +9,11 @@ import numpy as np
 import math
 import subprocess
 
+
 left_clicked = False
 mouse_drawing_rect_coords = []
+
+'''Global variables'''
 
 
 def put_icon_on_image(x, y, icon, frame):
@@ -59,7 +63,27 @@ def handle_mouse_event(event, x, y, flags, param):
         mouse_drawing_rect_coords.append((x, y))
         left_clicked = False
 
+darkness = 80
+median_blur = 15
+gaussian_blur = 21
 
+
+def change_darkness( val):
+    global darkness
+    darkness = val
+
+def change_median_blur(val):
+    global median_blur
+    if ( val % 2 == 0):
+        median_blur = val + 1
+    else:
+        median_blur = val
+def change_gaussian_blur(val):
+    global gaussian_blur
+    if ( val % 2 == 0 ):
+        gaussian_blur = val +1
+    else:
+        gaussian_blur = val
 class CameraOperator:
 
     def __init__(self):
@@ -150,9 +174,9 @@ class CameraOperator:
 
         if thresh is not None and img is not None:
 
-            im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
+            contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
             try:
+                print(contours)
                 contour = max(contours, key=lambda x: cv.contourArea(x))
 
                 x, y, w, h = cv.boundingRect(contour)
@@ -207,17 +231,18 @@ class CameraOperator:
                         self.status = count_defects
 
                     all = np.hstack((drawing, img))
-                    # cv.imshow("Contours", all)
+                    #cv.imshow("Contours", all)
 
             except ValueError:
                 print("err or")
-
     def start(self):
-
+        global darkness
+        global median_blur
+        global gaussian_blur
         width, height = 1920, 1080
 
 
-        cv2.namedWindow("display", cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow("display", cv2.WINDOW_NORMAL)
         # cv2.setWindowProperty("display", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         image_w, image_h = 640, 480
@@ -226,10 +251,9 @@ class CameraOperator:
 
         key_pressed = 'q'
 
-        fist_cascade = cv2.CascadeClassifier("/home/rafal/PycharmProjects/Python2/fist_v3.xml")
+        fist_cascade = cv2.CascadeClassifier("fist_v3.xml")
 
         thresh1 = None
-        darkness = 80
         flag = 1
         ly = 0
         lx = 0
@@ -245,7 +269,6 @@ class CameraOperator:
         i = 0
 
         while capture.isOpened() and (not self.leave):
-
             tlo = cv2.imread("tlo.jpg", 1)
             print(last_modes, i, self.status)
             '''Reading image:'''
@@ -278,14 +301,14 @@ class CameraOperator:
 
             if first_gray is not None:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                gray = cv2.GaussianBlur(gray, (21, 21), 0)
+                gray = cv2.GaussianBlur(gray, (gaussian_blur, gaussian_blur), 0)
 
                 # In each iteration, calculate absolute difference between current frame and reference frame
                 difference = cv2.absdiff(gray, first_gray)
 
-                median2 = cv2.medianBlur(gray, 15)
+                median2 = cv2.medianBlur(gray, median_blur)
                 # difference = cv2.GaussianBlur(difference, (40, 40), 0)
-                median = cv2.medianBlur(difference, 15)
+                median = cv2.medianBlur(difference, median_blur)
                 # Apply thresholding to eliminate noise
                 ret, thresh2 = cv.threshold(median, darkness, 255, cv.THRESH_BINARY)
                 ret, thresh1 = cv.threshold(median2, darkness, 255, cv.THRESH_BINARY)
@@ -320,7 +343,7 @@ class CameraOperator:
                 if left_up_corner_x < 0:
                     left_up_corner_x = 0
                 if right_down_corner_x > frame.shape[1]:
-                    right_down_corner_x: frame.shape[1]
+                    right_down_corner_x= frame.shape[1]
                 cropped_image = frame[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
                 if thresh1 is not None:
                     cropped_thresh = thresh1[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
@@ -329,9 +352,11 @@ class CameraOperator:
                 # if cropped_image != []:
                 #
                 #     cv2.imshow('sd', cropped_image)
-
+                print(detection)
                 if detection:
+                    print("OK")
                     self.operate_cropped_file(cropped_thresh, cropped_image)
+                    print("OK")
                     last_modes[i] = self.status
                     i += 1
                     if i == time_to_set:
@@ -344,13 +369,10 @@ class CameraOperator:
             x_offset = 50
             y_offset = 75
             tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = frame
-
-            x_offset = int (width / 3)
-            y_offset = int (height / 3)
-            display = tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]]
-
-            cv2.imshow("display", display)
-
+            cv2.imshow("display", tlo)
+            cv2.createTrackbar("Darkness","display",0, 100, change_darkness)
+            cv2.createTrackbar("Gaussian_blur", "display", 0, 100, change_gaussian_blur)
+            cv2.createTrackbar("Median_blur", "display", 0, 100, change_median_blur)
             # '''Label printing:'''
             # if printing_label:q
             #     cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
@@ -386,7 +408,7 @@ class CameraOperator:
                 ret, first = capture.read()
                 first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
 
-                first_gray = cv2.GaussianBlur(first_gray, (21, 21), 0)
+                first_gray = cv2.GaussianBlur(first_gray, (gaussian_blur, gaussian_blur), 0)
                 flag = 1
 
             if key_pressed == ord('l'):
