@@ -189,10 +189,10 @@ class CameraOperator:
 
                 cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 255), 0)
 
-                if x == 0 and y == 0:
+                if 0 <= x <= img.shape[1]/6 and 0 <= y <= img.shape[1]/6:
                     self.status_move = 3
                 else:
-                    if x + w == img.shape[1] and y == 0:
+                    if img.shape[1] -img.shape[1]/6 <= x + w <= img.shape[1] and 0 <= y <= img.shape[1]/6:
                         self.status_move = 4
                     else:
                         if x + w == img.shape[1]:
