@@ -50,7 +50,7 @@ class Browser_operator:
         self.driver.set_page_load_timeout(10)
 
         self.driver.get(initial_site)
-        self.driver.set_window_size(1080, 1080)
+        self.driver.set_window_size(1040, 1080)
         self.driver.set_window_position(800, 0)
 
         self.keyboard = Controller()
@@ -70,7 +70,7 @@ class Browser_operator:
         self.radio_stations =[
                                "https://www.youtube.com/watch?v=taD9hqwCb1o",
                                "https://www.youtube.com/watch?v=6dHrafwh974",
-                               "https://www.youtube.com/watch?v=6dHrafwh974"
+                               "https://www.youtube.com/watch?v=hVJHzWb5d5k"
                              ]
 
         '''Following variable shows how many times screen has been scrolled
@@ -375,9 +375,16 @@ class Browser_operator:
 
 
     def radio_next_station(self):
+        if not self.radio_mode :
+            return
         self.last_radio_station = (self.last_radio_station + 1) % 3
+        self.driver.get( self.radio_stations [ self.last_radio_station ] )
+
     def radio_previous_station(self):
+        if not self.radio_mode :
+            return
         self.last_radio_station = (self.last_radio_station - 1) % 3
+        self.driver.get(self.radio_stations[self.last_radio_station])
 
     def __str__(self):
         out = "Driver:"
