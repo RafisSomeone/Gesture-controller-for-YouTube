@@ -1,4 +1,4 @@
-from Browser_Operator import Browser_operator
+from Browser_operator import Browser_operator
 from Camera_Operator import CameraOperator
 from Operation import *
 from Login import *
@@ -9,17 +9,25 @@ import sys
 '''Change to use keyboard'''
 debug = False
 
+
 def mode_one(camera_operator, browser_operator):
     if camera_operator.status_move == 1:
         browser_operator.radio_next_station()
+        time.sleep(1)
 
     if camera_operator.status_move == -1:
         browser_operator.radio_previous_station()
+        time.sleep(1)
 
     if camera_operator.status_move == 2:
-        browser_operator.radio()
+        browser_operator.scroll_down_by(-100)
 
-    time.sleep(1)
+    if camera_operator.status_move == 3:
+        browser_operator.scroll_down_by(100)
+
+    if camera_operator.status_move == 4:
+        browser_operator.radio()
+        time.sleep(1)
 
 
 def mode_two(camera_operator, browser_operator):
@@ -27,10 +35,10 @@ def mode_two(camera_operator, browser_operator):
         browser_operator.decrease_volume()
     if camera_operator.status_move == 1:
         browser_operator.increase_volume()
-    if camera_operator.status_move == 3:
+    if camera_operator.status_move == 4:
         browser_operator.like()
         time.sleep(1)
-    if camera_operator.status_move == 4:
+    if camera_operator.status_move == 3:
         browser_operator.not_like()
         time.sleep(1)
 
@@ -60,20 +68,17 @@ def mode_four(camera_operator, browser_operator):
 
 
 def main():
-    browser_operator = Browser_operator("/home/michal/chromedriver", "https://www.youtube.com/watch?v=cGNUpEerm9E")
+    browser_operator = Browser_operator("/home/rafal/Dokumenty/chromedriver/chromedriver",
+                                        "https://www.youtube.com/watch?v=cGNUpEerm9E")
 
     '''Logging in'''
     Login(browser_operator)
 
-
-    if ( browser_operator.logging_in_state ):
+    if browser_operator.logging_in_state:
         return
 
-
-
-
     camera_operator = CameraOperator()
-    if ( not debug ):
+    if not debug:
         camera_operator_thread = threading.Thread(target=camera_operator.start, args=[])
         camera_operator_thread.start()
     else:
@@ -82,7 +87,7 @@ def main():
 
     while not debug:
 
-        print(camera_operator.status_move, camera_operator.status,camera_operator.block)
+        print(camera_operator.status_move, camera_operator.status, camera_operator.block)
 
         if camera_operator.status != -1:
             if camera_operator.status == 1:
@@ -133,5 +138,6 @@ def main():
             if (camera_operator.status == ord('j')):
                 browser_operator.scroll_down_by(100)
             print(camera_operator.status)
+
 
 main()

@@ -1,7 +1,7 @@
 import cv2
 from PyQt5.QtWidgets import *
 import os
-from Browser_Operator import *
+from Browser_operator import Browser_operator
 
 
 

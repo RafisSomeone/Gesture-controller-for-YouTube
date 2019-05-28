@@ -132,6 +132,8 @@ class CameraOperator:
         radio = cv2.imread("radio.png", -1)
         radioleft  = cv2.imread("radioleft.png",-1)
         radioright = cv2.imread("radioright.png", -1)
+        scrollup = cv2.imread("scrollup.png", -1)
+        scrolldown = cv2.imread("scrolldown.png", -1)
         shift = 25
         h = right_down_corner_y - left_up_corner_y
         w = right_down_corner_x - left_up_corner_x
@@ -141,9 +143,13 @@ class CameraOperator:
         if self.status == 1:
             put_icon_on_image(right_down_corner_x - 2 * shift, int(left_up_corner_y + h / 2) - shift, radioright, frame)
 
-            put_icon_on_image(int(left_up_corner_x + w / 2) - shift, left_up_corner_y, radio, frame)
+            put_icon_on_image(int(left_up_corner_x + w / 2) - shift, left_up_corner_y, scrollup, frame)
 
             put_icon_on_image(left_up_corner_x, int(left_up_corner_y + h / 2) - shift, radioleft, frame)
+
+            put_icon_on_image(left_up_corner_x, left_up_corner_y, scrolldown, frame)
+
+            put_icon_on_image(right_down_corner_x - 2 * shift, left_up_corner_y, radio, frame)
 
         if self.status == 2:
             put_icon_on_image(left_up_corner_x, left_up_corner_y, dislike, frame)
@@ -174,7 +180,7 @@ class CameraOperator:
 
         if thresh is not None and img is not None:
 
-            contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+            im2, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
             try:
                 print(contours)
                 contour = max(contours, key=lambda x: cv.contourArea(x))
@@ -242,7 +248,7 @@ class CameraOperator:
         width, height = 1920, 1080
 
 
-        cv2.namedWindow("display", cv2.WINDOW_NORMAL)
+        # cv2.namedWindow("display", cv2.WINDOW_NORMAL)
         # cv2.setWindowProperty("display", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         image_w, image_h = 640, 480
@@ -270,7 +276,7 @@ class CameraOperator:
 
         while capture.isOpened() and (not self.leave):
             tlo = cv2.imread("tlo.jpg", 1)
-            print(last_modes, i, self.status)
+            # print(last_modes, i, self.status)
             '''Reading image:'''
             ret, frame = capture.read()
 
@@ -326,7 +332,7 @@ class CameraOperator:
                                 (255, 255, 0), 1)
 
                 x_offset = 50
-                y_offset = image_h + 100
+                y_offset = image_h + 50
                 tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = curr1
 
             print(frame.shape[0], frame.shape[1])
@@ -343,7 +349,7 @@ class CameraOperator:
                 if left_up_corner_x < 0:
                     left_up_corner_x = 0
                 if right_down_corner_x > frame.shape[1]:
-                    right_down_corner_x= frame.shape[1]
+                    right_down_corner_x = frame.shape[1]
                 cropped_image = frame[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
                 if thresh1 is not None:
                     cropped_thresh = thresh1[left_up_corner_y:right_down_corner_y, left_up_corner_x:right_down_corner_x]
@@ -352,11 +358,11 @@ class CameraOperator:
                 # if cropped_image != []:
                 #
                 #     cv2.imshow('sd', cropped_image)
-                print(detection)
+                # print(detection)
                 if detection:
-                    print("OK")
+                    # print("OK")
                     self.operate_cropped_file(cropped_thresh, cropped_image)
-                    print("OK")
+                    # print("OK")
                     last_modes[i] = self.status
                     i += 1
                     if i == time_to_set:
@@ -369,10 +375,17 @@ class CameraOperator:
             x_offset = 50
             y_offset = 75
             tlo[y_offset:y_offset + frame.shape[0], x_offset:x_offset + frame.shape[1]] = frame
-            cv2.imshow("display", tlo)
-            cv2.createTrackbar("Darkness","display",0, 100, change_darkness)
-            cv2.createTrackbar("Gaussian_blur", "display", 0, 100, change_gaussian_blur)
-            cv2.createTrackbar("Median_blur", "display", 0, 100, change_median_blur)
+
+            x_offset = int(width / 6)
+            display = tlo[0:int(tlo.shape[1]), 0:int(tlo.shape[0])-x_offset]
+
+            cv2.imshow("display", display)
+            cv2.namedWindow("display")
+            cv2.moveWindow("display", 40, 0)
+            # print(darkness);
+            # cv2.createTrackbar("Darkness","display",0, 300, change_darkness)
+            # cv2.createTrackbar("Gaussian_blur", "display", 0, 100, change_gaussian_blur)
+            # cv2.createTrackbar("Median_blur", "display", 0, 100, change_median_blur)
             # '''Label printing:'''
             # if printing_label:q
             #     cv2.rectangle(output, (0, 0), (700, 100), (255, 255, 0), cv2.FILLED)
